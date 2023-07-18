@@ -27,7 +27,7 @@ pack (Class n abs ows)  = newLine <> simpleHorizontalSpace <>
                           abstract abs <> modifier "public" <+> simpleType "class" <+> identifier n <>
                           vcat (punctuate (empty) (map (\x -> parentCl x) ows) ) <>
                           newLine <> simpleHorizontalSpace <> blockBegin <> 
-                           propertyId
+                           propertyId n
                            $$ vcat (punctuate (empty) (map (\x -> owCl x) ows) ) <> 
                           newLine <> simpleHorizontalSpace <> blockEnd
 pack (Enumeration n ls) = newLine <> simpleHorizontalSpace <> 
@@ -184,8 +184,8 @@ contextConfig n = newLine <> newLine <> doubleHorizontalSpace <>
 contextDeclarationEnd = newLine <> simpleHorizontalSpace <>
   text "}"
 
-propertyId = newLine <> doubleHorizontalSpace <> 
-  text "public int Id { get; set; }"
+propertyId n = newLine <> doubleHorizontalSpace <> 
+  text "public int " <> text n <> text "Id { get; set; }"
 
 namespaceHeader name = newLine <> text "namespace" <+> text name <+> text "{" 
 namespaceEnd = newLine <> text "}"
