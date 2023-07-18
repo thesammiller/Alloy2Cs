@@ -13,7 +13,9 @@ spec (Namespace n elems) = usings <> (namespaceHeader n) <+>
                              contextDeclaration <>
                               vcat (punctuate (empty) (map (\x -> dbSet x) elems) ) <>
                               contextConfig n <>
-                             contextDeclarationEnd
+                             contextDeclarationEnd <> newLine <> modelCreate n 
+                             $$ vcat (punctuate (empty) (map (\x -> modelPack x) elems) ) <>
+                             modelCreateEnd
                              $$ vcat (punctuate (empty) (map (\x -> pack x) elems) ) <> 
                             namespaceEnd 
 
@@ -21,6 +23,15 @@ dbSet :: Packaged  -> Doc
 dbSet (Class n abs ows)  = newLine <> doubleHorizontalSpace <> 
                            text "public DbSet<" <> identifier n <> text ">" <+> identifier n <+> text "{ get; set; }"
 dbSet (Enumeration n ls) = empty                 
+
+modelPack (Class n abs ows)  = newLine <> tripleHorizontalSpace <> 
+                          text "modelBuilder.Entity<" <> text n <> text ">()" <>
+                          tripleHorizontalSpace <> simpleHorizontalSpace <> 
+                          newLine <> tripleHorizontalSpace <> doubleHorizontalSpace <>
+                          text ".Property(b => b." <> text n <> text "Id)" <> 
+                          newLine <> tripleHorizontalSpace <> doubleHorizontalSpace <>
+                          text ".HasDefaultValueSql(" <> char '"'<> text "NEWID()" <> char '"' <> text ");" <> newLine
+
 
 pack :: Packaged  -> Doc
 pack (Class n abs ows)  = newLine <> simpleHorizontalSpace <> 
@@ -181,11 +192,17 @@ contextConfig n = newLine <> newLine <> doubleHorizontalSpace <>
   newLine <> doubleHorizontalSpace <> 
   text "}"
 
+modelCreate n = newLine <> newLine <> doubleHorizontalSpace <>
+  text "protected override void OnModelCreating(ModelBuilder modelBuilder) {"
+
+modelCreateEnd = newLine <> simpleHorizontalSpace <>
+  text "}"
+
 contextDeclarationEnd = newLine <> simpleHorizontalSpace <>
   text "}"
 
 propertyId n = newLine <> doubleHorizontalSpace <> 
-  text "public int " <> text n <> text "Id { get; set; }"
+  text "public Guid " <> text n <> text "Id { get; set; }"
 
 namespaceHeader name = newLine <> text "namespace" <+> text name <+> text "{" 
 namespaceEnd = newLine <> text "}"
@@ -207,7 +224,7 @@ name n                   = text n
 abstract abs  = if abs then text "abstract "
   else empty
 
-readOnly r    = if  r  then text "{ get; protected set; }"
+readOnly r    = if  r  then text "{ get; set; }"
   else text "{ get; set; }"
 
 pp str = char '\'' <> text str <> char '\''
